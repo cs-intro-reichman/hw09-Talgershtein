@@ -54,26 +54,27 @@ public class LanguageModel {
     // Computes and sets the probabilities (p and cp fields) of all the
 	// characters in the given list. */
 	void calculateProbabilities(List probs) {				
-		int totalCounts = 0;
-        for (int i = 0; i < probs.getSize(); i++)
-            totalCounts += probs.get(i).count;
+		CharData[] data = probs.toArray();
+        int totalCounts = 0;
+        for (int i = 0; i < data.length; i++)
+            totalCounts += data[i].count;
         double cumulativeProb = 0;
-        for (int i = 0; i < probs.getSize(); i++) {
-            CharData cd = probs.get(i);
-            cd.p = (double) cd.count / totalCounts;
-            cumulativeProb += cd.p;
-            cd.cp = cumulativeProb;
+        for (int i = 0; i < data.length; i++) {
+            data[i].p = (double) data[i].count / totalCounts;
+            cumulativeProb += data[i].p;
+            data[i].cp = cumulativeProb;
         }
+    }
+
+    char getRandomChar(List probs) {
+        double r = randomGenerator.nextDouble();
+        CharData[] data = probs.toArray();
+        for (int i = 0; i < data.length; i++)
+            if (data[i].cp > r)
+                return data[i].chr;
+        return data[data.length - 1].chr;
 	}
 
-    // Returns a random character from the given probabilities list.
-	char getRandomChar(List probs) {
-		double r = randomGenerator.nextDouble();
-        for (int i = 0; i < probs.getSize(); i++)
-            if (probs.get(i).cp > r)
-                return probs.get(i).chr;
-        return probs.get(probs.getSize() - 1).chr;
-    }
 
     /**
 	 * Generates a random text, based on the probabilities that were learned during training. 
@@ -87,7 +88,6 @@ public class LanguageModel {
             return initialText;
         String window = initialText.substring(initialText.length() - windowLength);
         StringBuilder generatedText = new StringBuilder(initialText);
-
         while (generatedText.length() < textLength) {
             List probs = CharDataMap.get(window);
             if (probs == null)
@@ -96,7 +96,6 @@ public class LanguageModel {
             generatedText.append(nextChar);
             window = generatedText.substring(generatedText.length() - windowLength);
         }
-
         return generatedText.toString();
     }
 
