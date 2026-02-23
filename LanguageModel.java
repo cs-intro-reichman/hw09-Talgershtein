@@ -88,10 +88,9 @@ public class LanguageModel {
             return initialText;
         String window = initialText.substring(initialText.length() - windowLength);
         StringBuilder generatedText = new StringBuilder(initialText);
-        while (generatedText.length() < textLength) {
+        for (int i = 0; i < textLength; i++) {
             List probs = CharDataMap.get(window);
-            if (probs == null)
-                break;
+            if (probs == null) break;
             char nextChar = getRandomChar(probs);
             generatedText.append(nextChar);
             window = generatedText.substring(generatedText.length() - windowLength);
